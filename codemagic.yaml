@@ -1,0 +1,33 @@
+workflows:
+  ios_release:
+    name: iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      vars:
+        BUNDLE_ID: "com.yumedine.connect"
+    scripts:
+      - name: Flutter version
+        script: flutter --version
+      - name: Create iOS platform if missing
+        script: |
+          if [ ! -d ios ]; then
+            flutter create --platforms=ios .
+          fi
+      - name: Ensure correct bundle identifier
+        script: |
+          ruby -pi -e "gsub(/PRODUCT_BUNDLE_IDENTIFIER = .*;/, 'PRODUCT_BUNDLE_IDENTIFIER = ' + ENV['BUNDLE_ID'] + ';')" ios/Runner.xcodeproj/project.pbxproj
+      - name: Pub get
+        script: flutter pub get
+      - name: Build IPA (no codesign here)
+        script: flutter build ipa --release --no-codesign
+    ios_signing:
+      distribution_type: app_store
+      automatic_signing: true
+      bundle_identifier: "$BUNDLE_ID"
+    publishing:
+      app_store_connect:
+        auth: api_key
+        submit_to_testflight: true
