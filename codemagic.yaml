@@ -1,33 +1,34 @@
 workflows:
   ios_release:
     name: iOS Release
-    max_build_duration: 60
     instance_type: mac_mini_m1
+    max_build_duration: 60
+
     environment:
       flutter: stable
       xcode: latest
       vars:
-        BUNDLE_ID: "YumeAPP"
+        # Mets le bundle ID qui existe dans Apple Developer
+        BUNDLE_ID: "YumeApp"          # ou "com.yumedine.connect" si c'est celui-là
+        TEAM_ID: "Y47X4KBUDL"         # <- Ton Team ID (déjà vu dans tes captures)
+
     scripts:
-      - name: Flutter version
-        script: flutter --version
-      - name: Create iOS platform if missing
-        script: |
-          if [ ! -d ios ]; then
-            flutter create --platforms=ios .
-          fi
-      - name: Ensure correct bundle identifier
-        script: |
-          ruby -pi -e "gsub(/PRODUCT_BUNDLE_IDENTIFIER = .*;/, 'PRODUCT_BUNDLE_IDENTIFIER = ' + ENV['BUNDLE_ID'] + ';')" ios/Runner.xcodeproj/project.pbxproj
-      - name: Pub get
+      - name: Flutter pub get
         script: flutter pub get
-      - name: Build IPA (no codesign here)
-        script: flutter build ipa --release --no-codesign
-    ios_signing:
-      distribution_type: app_store
-      automatic_signing: true
-      bundle_identifier: "$BUNDLE_ID"
-    publishing:
-      app_store_connect:
-        auth: api_key
-        submit_to_testflight: true
+
+      - name: Set bundle id & team
+        script: |
+          # Remplace le Bundle ID dans le .pbxproj
+          sed -i '' -E "s/PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/PRODUCT_BUNDLE_IDENTIFIER = ${BUNDLE_ID};/g" ios/Runner.xcodeproj/project.pbxproj
+
+          # Remplace (ou ajoute) le Team ID
+          if grep -q "DEVELOPMENT_TEAM = " ios/Runner.xcodeproj/project.pbxproj; then
+            sed -i '' -E "s/DEVELOPMENT_TEAM = [A-Z0-9]+;/DEVELOPMENT_TEAM = ${TEAM_ID};/g" ios/Runner.xcodeproj/project.pbxproj
+          else
+            # au cas où la clé n’existe pas dans le fichier
+            echo "// DEVELOPMENT_TEAM = ${TEAM_ID};" >> ios/Runner.xcodeproj/project.pbxproj
+          fi
+
+      - name: Build IPA
+        script: flutter build ipa --release -t lib/main.dart
+
