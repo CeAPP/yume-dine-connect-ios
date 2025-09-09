@@ -9,7 +9,7 @@ workflows:
       xcode: latest
       vars:
         # Mets le bundle ID qui existe dans Apple Developer
-        BUNDLE_ID: "YumeApp"          # ou "com.yumedine.connect" si c'est celui-là
+        BUNDLE_ID: "com.yumedine.connect"          # ou "com.yumedine.connect" si c'est celui-là
         TEAM_ID: "Y47X4KBUDL"         # <- Ton Team ID (déjà vu dans tes captures)
 
     scripts:
