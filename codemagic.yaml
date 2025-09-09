@@ -7,7 +7,7 @@ workflows:
       flutter: stable
       xcode: latest
       vars:
-        BUNDLE_ID: "com.yumedine.connect"
+        BUNDLE_ID: "YumeAPP"
     scripts:
       - name: Flutter version
         script: flutter --version
