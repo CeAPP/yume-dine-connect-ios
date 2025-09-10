@@ -8,27 +8,28 @@ workflows:
       flutter: stable
       xcode: latest
       vars:
-        # Mets le bundle ID qui existe dans Apple Developer
-        BUNDLE_ID: "com.yumedine.connect"          # ou "com.yumedine.connect" si c'est celui-là
-        TEAM_ID: "Y47X4KBUDL"         # <- Ton Team ID (déjà vu dans tes captures)
+        # ⚠️ Mets ici EXACTEMENT le bundle identifier que tu utilises
+        # dans Apple Developer / Codemagic UI (ex: "YumeApp" ou "com.yumedine.connect")
+        BUNDLE_ID: "YumeApp"
 
     scripts:
       - name: Flutter pub get
         script: flutter pub get
 
-      - name: Set bundle id & team
+      - name: Set bundle id in Xcode project
         script: |
-          # Remplace le Bundle ID dans le .pbxproj
-          sed -i '' -E "s/PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/PRODUCT_BUNDLE_IDENTIFIER = ${BUNDLE_ID};/g" ios/Runner.xcodeproj/project.pbxproj
-
-          # Remplace (ou ajoute) le Team ID
-          if grep -q "DEVELOPMENT_TEAM = " ios/Runner.xcodeproj/project.pbxproj; then
-            sed -i '' -E "s/DEVELOPMENT_TEAM = [A-Z0-9]+;/DEVELOPMENT_TEAM = ${TEAM_ID};/g" ios/Runner.xcodeproj/project.pbxproj
-          else
-            # au cas où la clé n’existe pas dans le fichier
-            echo "// DEVELOPMENT_TEAM = ${TEAM_ID};" >> ios/Runner.xcodeproj/project.pbxproj
-          fi
+          # Remplace le PRODUCT_BUNDLE_IDENTIFIER dans le .pbxproj
+          sed -i '' -E \
+          "s/PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/PRODUCT_BUNDLE_IDENTIFIER = ${BUNDLE_ID};/g" \
+          ios/Runner.xcodeproj/project.pbxproj
 
       - name: Build IPA
         script: flutter build ipa --release -t lib/main.dart
+
+    # Laisse Codemagic gérer la signature (UI -> iOS code signing -> Automatic + API Key)
+    publishing:
+      app_store_connect:
+        auth: api_key
+        submit_to_testflight: true
+
 
