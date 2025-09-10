@@ -10,7 +10,7 @@ workflows:
       vars:
         # ⚠️ Mets ici EXACTEMENT le bundle identifier que tu utilises
         # dans Apple Developer / Codemagic UI (ex: "YumeApp" ou "com.yumedine.connect")
-        BUNDLE_ID: "YumeApp"
+        BUNDLE_ID: "com.yumedine.connect"
 
     scripts:
       - name: Flutter pub get
