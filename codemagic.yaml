@@ -8,28 +8,43 @@ workflows:
       flutter: stable
       xcode: latest
       vars:
-        # ⚠️ Mets ici EXACTEMENT le bundle identifier que tu utilises
-        # dans Apple Developer / Codemagic UI (ex: "YumeApp" ou "com.yumedine.connect")
+        # Ton bundle id et ton team id
         BUNDLE_ID: "com.yumedine.connect"
+        TEAM_ID: "Y47X4KBUDL"
 
     scripts:
       - name: Flutter pub get
         script: flutter pub get
 
-      - name: Set bundle id in Xcode project
+      - name: Set bundle id & team in Xcode project
         script: |
-          # Remplace le PRODUCT_BUNDLE_IDENTIFIER dans le .pbxproj
-          sed -i '' -E \
-          "s/PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/PRODUCT_BUNDLE_IDENTIFIER = ${BUNDLE_ID};/g" \
-          ios/Runner.xcodeproj/project.pbxproj
+          FILE="ios/Runner.xcodeproj/project.pbxproj"
+
+          # 1) Bundle ID
+          sed -i '' -E "s/PRODUCT_BUNDLE_IDENTIFIER = [^;]+;/PRODUCT_BUNDLE_IDENTIFIER = ${BUNDLE_ID};/g" "$FILE"
+
+          # 2) Team ID (ajoute ou remplace)
+          if grep -q "DEVELOPMENT_TEAM =" "$FILE"; then
+            sed -i '' -E "s/DEVELOPMENT_TEAM = [A-Z0-9]+;/DEVELOPMENT_TEAM = ${TEAM_ID};/g" "$FILE"
+          else
+            # Ajoute la ligne si absente (sécurise le cas)
+            awk -v team="DEVELOPMENT_TEAM = ${TEAM_ID};" '
+              BEGIN{added=0}
+              {print}
+              END{if(!added) print team}
+            ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          fi
+
+          # 3) Signe en automatique
+          sed -i '' -E "s/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g" "$FILE"
 
       - name: Build IPA
         script: flutter build ipa --release -t lib/main.dart
 
-    # Laisse Codemagic gérer la signature (UI -> iOS code signing -> Automatic + API Key)
     publishing:
       app_store_connect:
         auth: api_key
         submit_to_testflight: true
+
 
 
