@@ -9,7 +9,7 @@ workflows:
       xcode: latest
       vars:
         # Ton bundle id et ton team id
-        BUNDLE_ID: "com.yumedine.connect"
+        BUNDLE_ID: "com.example.yumeDineConnectStarter"
         TEAM_ID: "Y47X4KBUDL"
 
     scripts:
