@@ -11,19 +11,14 @@ dependencies:
     sdk: flutter
   webview_flutter: ^4.8.0
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_launcher_icons: ^0.13.1
-
-flutter_launcher_icons:
-  android: false
-  ios: true
-  image_path: "icon.png"
-  remove_alpha_ios: true
-
 flutter:
   uses-material-design: true
 
+dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
 
-
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "icon.png"
+  remove_alpha_ios: true
